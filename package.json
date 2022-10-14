@@ -1,10 +1,10 @@
 {
-  "name": "workerpool",
+  "name": "poolingexecute",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "directories": {
-    "test": "test"
+    "test": "node test"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,6 +16,6 @@
     "eslint": "^8.15.0",
     "typescript": "^4.6.4"
   },
-  "author": "",
+  "author": "leekafai",
   "license": "ISC"
 }
