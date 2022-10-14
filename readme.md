@@ -7,18 +7,25 @@ A easy way to use worker_threads
 // index.js
 const path = require('path')
 
-const ThreadPool = require('..').default
+const ThreadPool = require('poolingexecute').default
 
 const main = async () => {
-  const x = new ThreadPool({ limit: 5, script: path.join(__dirname, 'worker.js') })
+  const x = new ThreadPool({ 
+    limit: 5, 
+    script: path.join(__dirname, 'worker.js'),
+    workerData:{}
+     })
 
-  setInterval(() => {
-    x.exec(Date.now()).then((d) => {
+  setInterval(
+    () => {
+    x.exec(Date.now())
+    .then((d) => {
       console.log(d, 'result')
-    }).catch((e) => {
+    })
+    .catch((e) => {
       console.log(e, 'Err')
     })
-  }, 5e1)
+    }, 5e1)
 
 }
 main()
