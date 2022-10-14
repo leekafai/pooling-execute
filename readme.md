@@ -31,8 +31,9 @@ const main = async () => {
 main()
 // worker.js
 const { parentPort } = require("worker_threads");
-
+// you can still use workerData from worker_threads
 parentPort.on('message', async (d) => {
+  
   setTimeout(() => {
     parentPort.postMessage(Math.random > 0.5 ? (Date.now() - d) : new Error(Date.now() + ''))
   }, 2e3)
