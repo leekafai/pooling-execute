@@ -37,7 +37,6 @@ class ThreadPool {
         this.workerEvent.emit(uid, d)
         worker.off('message', () => { })
       })
-      console.log(typeof data)
       worker.postMessage(data)
 
     }, 0)
