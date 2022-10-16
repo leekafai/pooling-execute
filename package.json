@@ -17,5 +17,8 @@
     "typescript": "^4.6.4"
   },
   "author": "leekafai",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "denque": "^2.1.0"
+  }
 }

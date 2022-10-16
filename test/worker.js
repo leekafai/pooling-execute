@@ -1,11 +1,12 @@
 const { parentPort } = require("worker_threads");
 
-parentPort.on('message', async (d) => {
-  console.log(d, 'on message', typeof d)
-  setTimeout(() => {
-
-    parentPort.postMessage(Math.random > 0.5 ? (Date.now() - d) : new Error(Date.now() + ''))
-
-  }, 2e3)
+parentPort.on('message', async (ms) => {
+  const x = setTimeout(() => {
+    parentPort.postMessage(ms)
+    // console.dir(process.memoryUsage(), { from: 'worker' })
+    // console.dir(process.cpuUsage())
+    // clearTimeout(x)
+    // ~~(Math.random() * 100)
+  }, 1e2)
 
 })

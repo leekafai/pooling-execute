@@ -16,26 +16,31 @@ const main = async () => {
     workerData:{}
      })
 
-  setInterval(
-    () => {
-    x.exec(Date.now())
-    .then((d) => {
-      console.log(d, 'result')
-    })
-    .catch((e) => {
-      console.log(e, 'Err')
-    })
-    }, 5e1)
+  for (let i = 0; i < 10; i++) {
+    const t = Math.random()
+    x.exec(t)
+      .then((d) => {
+        console.log(d === t, 'result')
+      })
+      .catch((e) => {
+        console.log(e, 'Err')
+      })
+  }
+
 
 }
 main()
 // worker.js
 const { parentPort } = require("worker_threads");
 // you can still use workerData from worker_threads
+
 parentPort.on('message', async (d) => {
-  
   setTimeout(() => {
-    parentPort.postMessage(Math.random > 0.5 ? (Date.now() - d) : new Error(Date.now() + ''))
+    parentPort.postMessage(
+      Math.random() > 0.5 ?
+       d : 
+       new Error(Date.now() + '') // post Error to Promise.catch
+      )
   }, 2e3)
 
 })

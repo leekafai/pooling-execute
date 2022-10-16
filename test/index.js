@@ -1,17 +1,54 @@
+const { profile } = require('console')
 const path = require('path')
-
-const ThreadPool = require('..').default
-
+const wait = async (ms = 1e3) => {
+  return new Promise((res) => {
+    setTimeout(() => {
+      res()
+    }, ms)
+  })
+}
+const ThreadPool = require('../index').default
+// const ThreadPool = require('../perf').default
 const main = async () => {
-  const x = new ThreadPool({ limit: 5, script: path.join(__dirname, './worker.js') })
+  const x = new ThreadPool({ limit: 5, filename: path.join(__dirname, './worker.js') })
+
+  const { rss, heapTotal, heapUsed } = process.memoryUsage()
+  let maxRss = rss, minRss = rss, MaxHeapTotal = heapTotal, MinHeapTotal = heapTotal, MinHeapUsed = heapUsed, MaxHeapUsed = heapUsed
+  setInterval(() => {
+    // if (c > 10) return process.exit()
+
+
+    const { rss, heapTotal, heapUsed } = process.memoryUsage()
+    maxRss = Math.max(maxRss, rss)
+    minRss = Math.min(minRss, rss)
+
+    MaxHeapTotal = Math.max(MaxHeapTotal, heapTotal)
+    MinHeapTotal = Math.min(MinHeapTotal, heapTotal)
+
+    MaxHeapUsed = Math.max(MaxHeapUsed, heapUsed)
+    MinHeapUsed = Math.min(MinHeapUsed, heapUsed)
+
+    console.log('----')
+    console.dir({ maxRss, minRss, MaxHeapTotal, MinHeapTotal, MaxHeapUsed, MinHeapUsed })
+
+
+    // console.dir(process.memoryUsage())
+    // console.dir(process.cpuUsage())
+    // c++
+  }, 1e3)
 
   setInterval(() => {
-    x.exec(Date.now()).then((d) => {
-      console.log(d, 'result')
-    }).catch((e) => {
-      console.log(e, 'Err')
-    })
-  }, 5e1)
+
+    // console.log(t)
+    x.exec(1)
+      .then((d) => {
+        // console.log(d === t, t, 'result')
+      })
+      .catch((e) => {
+        console.log(e, 'Err')
+      })
+
+  }, 0)
 
 }
 main()
