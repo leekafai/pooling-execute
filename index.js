@@ -38,22 +38,38 @@ class ThreadPool {
         this._execQueue = new denque_1.default([]);
         this._idleWorkerIdQueue = new denque_1.default([]);
         this._poolMaxSize = (os.cpus()?.length || 2) - 1;
+        this._opts = {};
+        this._poolToDestroy = false;
         const initWorkerCount = options?.num || this._poolMaxSize;
         if (initWorkerCount <= 0)
             throw new Error('num must bigger than 0');
         if (!fs.existsSync(options.filename)) {
             throw new Error(`${options.filename} not exist`);
         }
+        console.log(this._opts, 'opts');
         this._opts.filename = options?.filename;
         this._opts.workerOptions = options.workerOptions;
         for (let i = 0; i < initWorkerCount; i++) {
             this._newWorker(this._opts.filename, this._opts.workerOptions);
         }
-        this._execTimer = setInterval(() => {
-            if (!this._execQueue.length)
-                return;
-            this._assign();
-        }, 0);
+    }
+    _setExecTimerActive(delay = 0) {
+        if (!this._execTimer) {
+            this._execTimer = setInterval(() => {
+                if (this._execQueue.isEmpty()) {
+                    return;
+                }
+                this._assign();
+            }, delay);
+        }
+    }
+    _toggleExecTimer() {
+        if (this._execTimer) {
+            clearInterval(this._execTimer);
+            this._execTimer = null;
+            return;
+        }
+        this._setExecTimerActive();
     }
     get size() {
         return this._workerPool.size;
@@ -64,6 +80,7 @@ class ThreadPool {
             return;
         const worker = this._getIdleWorker();
         if (!worker) {
+            this._setExecTimerActive();
             return this._execQueue.push(jobItem);
         }
         let { uid } = jobItem;
@@ -84,6 +101,50 @@ class ThreadPool {
         const worker = new worker_threads_1.Worker(filename, opts);
         this._workerPool.set(worker.threadId, worker);
         this._idleWorkerIdQueue.push(worker.threadId);
+    }
+    destroy(force = false) {
+        const execDestroy = async () => {
+            this._poolToDestroy = true;
+            const group = [];
+            for (const [, worker] of this._workerPool) {
+                group.push(worker.terminate());
+            }
+            await Promise.all(group);
+            this._workerPool.clear();
+            this._idleWorkerIdQueue.clear();
+            this._execQueue.clear();
+            this._execTimer && clearInterval(this._execTimer);
+            this._workerEvent.removeAllListeners();
+        };
+        return new Promise((res, rej) => {
+            try {
+                if (force) {
+                    execDestroy().then(() => {
+                        res(true);
+                    });
+                }
+                else {
+                    const w = setInterval(() => {
+                        if (this._workerPool.size !==
+                            this._idleWorkerIdQueue.size()) {
+                            return;
+                        }
+                        if (!this._execQueue.isEmpty()) {
+                            return;
+                        }
+                        if (this._poolToDestroy)
+                            return;
+                        execDestroy().then(() => {
+                            clearInterval(w);
+                            res(true);
+                        });
+                    }, 0);
+                }
+            }
+            catch (err) {
+                rej(err);
+            }
+        });
     }
     exec(value, transferList) {
         return new Promise((res, rej) => {
