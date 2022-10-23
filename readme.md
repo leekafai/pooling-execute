@@ -7,7 +7,7 @@ A easy way to use worker_threads
 // index.js
 const path = require('path')
 
-const ThreadPool = require('poolingexecute').default
+const ThreadPool = require('pooling-execute').default
 
 const main = async () => {
   const x = new ThreadPool({ 
@@ -18,7 +18,7 @@ const main = async () => {
 
   for (let i = 0; i < 10; i++) {
     const t = Math.random()
-    x.exec(t)
+    x.exec(t) // return a promise
       .then((d) => {
         console.log(d === t, 'result')
       })
